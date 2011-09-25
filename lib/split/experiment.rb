@@ -7,7 +7,10 @@ module Split
 
     def initialize(name, *alternative_names)
       @name = name.to_s
-      @alternative_names = alternative_names
+      @alternative_names = alternative_names.map do |alternative|
+                             Split::Alternative.new(alternative, name)
+                           end.map(&:name)
+
       @version = (Split.redis.get("#{name.to_s}:version").to_i || 0)
     end
 
@@ -36,7 +39,19 @@ module Split
     end
 
     def next_alternative
-      winner || alternatives.sort_by{|a| a.participant_count + rand}.first
+      winner || random_alternative
+    end
+
+    def random_alternative
+      weights = alternatives.map(&:weight)
+
+      total = weights.inject(0.0) {|t,w| t+w}
+      point = rand * total
+
+      alternatives.zip(weights).each do |n,w|
+        return n if w >= point
+        point -= w
+      end
     end
 
     def version
@@ -108,10 +123,10 @@ module Split
     def self.find_or_create(key, *alternatives)
       name = key.to_s.split(':')[0]
 
-      raise InvalidArgument, 'Alternatives must be strings' if alternatives.map(&:class).uniq != [String]
+      alts = initialize_alternatives(alternatives, name)
 
       if Split.redis.exists(name)
-        if load_alternatives_for(name) == alternatives
+        if load_alternatives_for(name) == alts.map(&:name)
           experiment = self.new(name, *load_alternatives_for(name))
         else
           exp = self.new(name, *load_alternatives_for(name))
@@ -125,6 +140,18 @@ module Split
         experiment.save
       end
       return experiment
+      
+    end
+
+    def self.initialize_alternatives(alternatives, name)
+
+      if alternatives.reject {|a| Split::Alternative.valid? a}.any?
+        raise InvalidArgument, 'Alternatives must be strings'
+      end
+
+      alternatives.map do |alternative|
+        Split::Alternative.new(alternative, name)
+      end
     end
   end
 end

@@ -57,6 +57,11 @@ describe Split::Helper do
       ret = ab_test('link_color', 'blue', 'red') { |alternative| "shared/#{alternative}" }
       ret.should eql("shared/#{alt}")
     end
+    
+    it  "should allow the share of visitors see an alternative to be specificed" do
+      ab_test('link_color', {'blue' => 0.8}, {'red' => 0.2})
+      ['red', 'blue'].should include(ab_user['link_color'])
+    end
   end
 
   describe 'finished' do
