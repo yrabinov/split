@@ -123,6 +123,14 @@ module Split
     def self.find_or_create(key, *alternatives)
       name = key.to_s.split(':')[0]
 
+      if alternatives.length == 1
+        if alternatives[0].is_a? Hash
+          alternatives = alternatives[0].map{|k,v| {k => v} }
+        else
+          raise InvalidArgument, 'You must declare at least 2 alternatives'
+        end
+      end
+
       alts = initialize_alternatives(alternatives, name)
 
       if Split.redis.exists(name)
