@@ -20,27 +20,27 @@ module Split
     end
 
     def participant_count
-      Split.redis.hget(key, 'participant_count').to_i
+      Split.db.get(key, 'participant_count').to_i
     end
 
     def participant_count=(count)
-      Split.redis.hset(key, 'participant_count', count.to_i)
+      Split.db.set(key, 'participant_count', count.to_i)
     end
 
     def completed_count
-      Split.redis.hget(key, 'completed_count').to_i
+      Split.db.get(key, 'completed_count').to_i
     end
 
     def completed_count=(count)
-      Split.redis.hset(key, 'completed_count', count.to_i)
+      Split.db.set(key, 'completed_count', count.to_i)
     end
 
     def increment_participation
-      Split.redis.hincrby key, 'participant_count', 1
+      Split.db.incr key, 'participant_count'
     end
 
     def increment_completion
-      Split.redis.hincrby key, 'completed_count', 1
+      Split.db.incr key, 'completed_count'
     end
 
     def control?
@@ -87,11 +87,11 @@ module Split
     end
 
     def reset
-      Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0
+      Split.db.reset(key)
     end
 
     def delete
-      Split.redis.del(key)
+      Split.db.delete(key)
     end
 
     def self.valid?(name)

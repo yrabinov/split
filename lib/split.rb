@@ -4,6 +4,7 @@ require 'split/helper'
 require 'split/version'
 require 'split/configuration'
 require 'redis/namespace'
+require 'split/database'
 
 module Split
   extend self
@@ -53,6 +54,10 @@ module Split
   def configure
      self.configuration ||= Configuration.new
      yield(configuration)
+   end
+   
+   def db
+     @db ||= Split::Database.new
    end
 end
 

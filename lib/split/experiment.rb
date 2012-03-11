@@ -11,7 +11,7 @@ module Split
     end
 
     def winner
-      if w = Split.redis.hget(:experiment_winner, name)
+      if w = Split.db.get(:experiment_winner, name)
         Split::Alternative.new(w, name)
       else
         nil
@@ -27,11 +27,11 @@ module Split
     end
 
     def winner=(winner_name)
-      Split.redis.hset(:experiment_winner, name, winner_name.to_s)
+      Split.db.set(:experiment_winner, name, winner_name.to_s)
     end
 
     def start_time
-      t = Split.redis.hget(:experiment_start_times, @name)
+      t = Split.db.get(:experiment_start_times, @name)
       Time.parse(t) if t
     end
 
@@ -60,11 +60,11 @@ module Split
     end
 
     def version
-      @version ||= (Split.redis.get("#{name.to_s}:version").to_i || 0)
+      @version ||= (Split.db.get("#{name.to_s}:version").to_i || 0)
     end
 
     def increment_version
-      @version = Split.redis.incr("#{name}:version")
+      @version = Split.db.incr("#{name}:version")
     end
 
     def key
@@ -85,27 +85,27 @@ module Split
       alternatives.each(&:delete)
       reset_winner
       Split.redis.srem(:experiments, name)
-      Split.redis.del(name)
+      Split.db.delete(name)
       increment_version
     end
 
     def new_record?
-      !Split.redis.exists(name)
+      !Split.db.exists?(name)
     end
 
     def save
       if new_record?
         Split.redis.sadd(:experiments, name)
-        Split.redis.hset(:experiment_start_times, @name, Time.now)
+        Split.db.set(:experiment_start_times, @name, Time.now)
         @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
       end
     end
 
     def self.load_alternatives_for(name)
-      case Split.redis.type(name)
+      case Split.db.type(name)
       when 'set' # convert legacy sets to lists
         alts = Split.redis.smembers(name)
-        Split.redis.del(name)
+        Split.db.delete(name)
         alts.reverse.each {|a| Split.redis.lpush(name, a) }
         Split.redis.lrange(name, 0, -1)
       else
@@ -118,7 +118,7 @@ module Split
     end
 
     def self.find(name)
-      if Split.redis.exists(name)
+      if Split.db.exists?(name)
         self.new(name, *load_alternatives_for(name))
       end
     end
@@ -136,7 +136,7 @@ module Split
 
       alts = initialize_alternatives(alternatives, name)
 
-      if Split.redis.exists(name)
+      if Split.db.exists?(name)
         if load_alternatives_for(name) == alts.map(&:name)
           experiment = self.new(name, *load_alternatives_for(name))
         else
