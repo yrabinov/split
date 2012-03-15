@@ -45,6 +45,35 @@ module Split
         self.server.exists(experiment_key)
       end
 
+      def save(experiment_name, alternatives, time)
+        self.server.sadd(:experiments, experiment_name)
+        self.server.hset(:experiment_start_times, experiment_name, time)
+        alternatives.reverse.each do |a|
+          self.lpush(experiment_name, a.name)
+        end
+      end
+
+      def alternatives(experiment_name)
+        case self.server.type(experiment_name)
+        when 'set' # convert legacy sets to lists
+          alts = self.server.smembers(experiment_name)
+          self.server.delete(experiment_name)
+          alts.reverse.each {|a| self.server.lpush(experiment_name, a) }
+          self.server.lrange(experiment_name, 0, -1)
+        else
+          self.server.lrange(experiment_name, 0, -1)
+        end
+      end
+
+      def start_time(experiment_name)
+        t = self.server.hget(:experiment_start_times, experiment_name)
+        Time.parse(t) if t
+      end
+
+      def version(experiment_name)
+        self.server.get("#{experiment_name.to_s}:version").to_i
+      end
+
       def get(experiment_key, attribute = nil)
         if attribute
           self.server.hget(experiment_key, attribute)

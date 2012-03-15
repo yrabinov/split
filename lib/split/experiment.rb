@@ -31,8 +31,7 @@ module Split
     end
 
     def start_time
-      t = Split.db.get(:experiment_start_times, @name)
-      Time.parse(t) if t
+      Split.db.start_time(@name)
     end
 
     def alternatives
@@ -60,7 +59,7 @@ module Split
     end
 
     def version
-      @version ||= (Split.db.get("#{name.to_s}:version").to_i || 0)
+      @version ||= (Split.db.version(name) || 0)
     end
 
     def increment_version
@@ -95,22 +94,12 @@ module Split
 
     def save
       if new_record?
-        Split.db.sadd(:experiments, name)
-        Split.db.set(:experiment_start_times, @name, Time.now)
-        @alternatives.reverse.each {|a| Split.db.lpush(name, a.name) }
+        Split.db.save(name, @alternatives, Time.now)
       end
     end
 
     def self.load_alternatives_for(name)
-      case Split.db.type(name)
-      when 'set' # convert legacy sets to lists
-        alts = Split.db.smembers(name)
-        Split.db.delete(name)
-        alts.reverse.each {|a| Split.db.lpush(name, a) }
-        Split.db.lrange(name, 0, -1)
-      else
-        Split.db.lrange(name, 0, -1)
-      end
+      Split.db.alternatives(name)
     end
 
     def self.all
