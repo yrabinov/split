@@ -4,6 +4,7 @@ require 'split/helper'
 require 'split/version'
 require 'split/configuration'
 require 'split/database'
+require 'time'
 
 module Split
   extend self
