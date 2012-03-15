@@ -87,7 +87,7 @@ module Split
     end
 
     def reset
-      Split.db.reset(key)
+      Split.db.reset(experiment_name, name)
     end
 
     def delete

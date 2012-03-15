@@ -35,7 +35,7 @@ describe Split::Experiment do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
 
-    Split.db.hdel(:experiment_start_times, experiment.name)
+    Split.db.stub(:start_time => nil)
 
     Split::Experiment.find('basket_text').start_time.should == nil
   end
@@ -45,7 +45,7 @@ describe Split::Experiment do
     experiment.save
     experiment.save
     Split.db.exists?('basket_text').should be true
-    Split.db.lrange('basket_text', 0, -1).should eql(['Basket', "Cart"])
+    Split.db.alternative_names('basket_text').should eql(['Basket', "Cart"])
   end
 
   describe 'deleting' do

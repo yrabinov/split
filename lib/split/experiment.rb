@@ -11,7 +11,7 @@ module Split
     end
 
     def winner
-      if w = Split.db.get(:experiment_winner, name)
+      if w = Split.db.winner(name)
         Split::Alternative.new(w, name)
       else
         nil
@@ -103,7 +103,7 @@ module Split
     end
 
     def self.all
-      Array(Split.db.smembers(:experiments)).map {|e| find(e)}
+      Split.db.all_experiments.map {|e| find(e)}
     end
 
     def self.find(name)

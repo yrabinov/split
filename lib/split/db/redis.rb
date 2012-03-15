@@ -49,7 +49,7 @@ module Split
         self.server.sadd(:experiments, experiment_name)
         self.server.hset(:experiment_start_times, experiment_name, time)
         alternatives.reverse.each do |a|
-          self.lpush(experiment_name, a.name)
+          self.server.lpush(experiment_name, a.name)
         end
       end
 
@@ -69,9 +69,21 @@ module Split
         t = self.server.hget(:experiment_start_times, experiment_name)
         Time.parse(t) if t
       end
+      
+      def all_experiments
+        Array(self.server.smembers(:experiments))
+      end
 
       def version(experiment_name)
         self.server.get("#{experiment_name.to_s}:version").to_i
+      end
+
+      def winner(experiment_name)
+        Split.db.get(:experiment_winner, experiment_name)
+      end
+
+      def alternative_names(experiment_name)
+        self.server.lrange(experiment_name, 0, -1)
       end
 
       def get(experiment_key, attribute = nil)
@@ -102,12 +114,8 @@ module Split
         self.server.del(experiment_key)
       end
 
-      def type(key)
-        self.server.type(key)
-      end
-    
-      def reset(experiment_key)
-        self.server.hmset experiment_key, 'participant_count', 0, 'completed_count', 0
+      def reset(experiment_name, alternative_name)
+        self.server.hmset "#{experiment_name}:#{alternative_name}", 'participant_count', 0, 'completed_count', 0
       end
 
       def hsetnx(key, attribute, value)
@@ -120,22 +128,6 @@ module Split
       
       def srem(key, attribute)
         self.server.srem(key, attribute)
-      end
-      
-      def sadd(key, attribute)
-        self.server.sadd(key, attribute)
-      end
-      
-      def lpush(key, value)
-        self.server.lpush(key, value)
-      end
-      
-      def smembers(key)
-        self.server.smembers(key)
-      end
-      
-      def lrange(key, first, last)
-        self.server.lrange(key, first, last)
       end
     end
   end

@@ -23,7 +23,7 @@ module Split
         self.server.count(:name => experiment_name) > 0
       end
 
-      def load(experiment_name)
+      def find(experiment_name)
         self.server.find(:name => experiment_name).first
       end
 
@@ -34,11 +34,11 @@ module Split
       end
 
       def alternatives(experiment_name)
-        self.load(experiment_name)[:alternatives]
+        self.find(experiment_name)[:alternatives]
       end
 
       def start_time(experiment_name)
-        self.load(experiment_name)[:created_at]
+        self.find(experiment_name)[:created_at]
       end
 
       def delete(experiment_name)
@@ -46,7 +46,15 @@ module Split
       end
 
       def version(experiment_name)
-        self.load(experiment_name)[:version]
+        self.find(experiment_name)[:version]
+      end
+      
+      def winner(experiment_name)
+        self.find(experiment_name)[:winner]
+      end
+      
+      def all_experiments
+        self.server.find.to_a
       end
     end
   end
