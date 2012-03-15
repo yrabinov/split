@@ -6,7 +6,7 @@ describe Split::Helper do
   include Split::Helper
 
   before(:each) do
-    Split.redis.flushall
+    Split.db.clean
     @session = {}
     params = nil
   end
@@ -316,10 +316,10 @@ describe Split::Helper do
     end
   end
 
-  context 'when redis is not available' do
+  context 'when db is not available' do
 
     before(:each) do
-      Split.stub(:redis).and_raise(Errno::ECONNREFUSED)
+      Split.stub(:db).and_raise(Errno::ECONNREFUSED)
     end
 
     context 'and db_failover config option is turned off' do

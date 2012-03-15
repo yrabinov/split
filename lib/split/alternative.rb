@@ -82,8 +82,8 @@ module Split
     end
 
     def save
-      Split.redis.hsetnx key, 'participant_count', 0
-      Split.redis.hsetnx key, 'completed_count', 0
+      Split.db.hsetnx key, 'participant_count', 0
+      Split.db.hsetnx key, 'completed_count', 0
     end
 
     def reset

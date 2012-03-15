@@ -23,7 +23,7 @@ module Split
     end
 
     def reset_winner
-      Split.redis.hdel(:experiment_winner, name)
+      Split.db.hdel(:experiment_winner, name)
     end
 
     def winner=(winner_name)
@@ -84,7 +84,7 @@ module Split
     def delete
       alternatives.each(&:delete)
       reset_winner
-      Split.redis.srem(:experiments, name)
+      Split.db.srem(:experiments, name)
       Split.db.delete(name)
       increment_version
     end
@@ -95,26 +95,26 @@ module Split
 
     def save
       if new_record?
-        Split.redis.sadd(:experiments, name)
+        Split.db.sadd(:experiments, name)
         Split.db.set(:experiment_start_times, @name, Time.now)
-        @alternatives.reverse.each {|a| Split.redis.lpush(name, a.name) }
+        @alternatives.reverse.each {|a| Split.db.lpush(name, a.name) }
       end
     end
 
     def self.load_alternatives_for(name)
       case Split.db.type(name)
       when 'set' # convert legacy sets to lists
-        alts = Split.redis.smembers(name)
+        alts = Split.db.smembers(name)
         Split.db.delete(name)
-        alts.reverse.each {|a| Split.redis.lpush(name, a) }
-        Split.redis.lrange(name, 0, -1)
+        alts.reverse.each {|a| Split.db.lpush(name, a) }
+        Split.db.lrange(name, 0, -1)
       else
-        Split.redis.lrange(name, 0, -1)
+        Split.db.lrange(name, 0, -1)
       end
     end
 
     def self.all
-      Array(Split.redis.smembers(:experiments)).map {|e| find(e)}
+      Array(Split.db.smembers(:experiments)).map {|e| find(e)}
     end
 
     def self.find(name)
