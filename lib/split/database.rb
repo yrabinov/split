@@ -1,6 +1,6 @@
-require 'split/db/redis'
+require 'split/db/mongo'
 module Split
   class Database
-    include Split::DB::Redis
+    include Split::DB::Mongo
   end
 end
