@@ -1,44 +1,44 @@
 module Split
   module DB
     module Redis
-      def exists?(key)
-        Split.redis.exists(key)
+      def exists?(experiment_key)
+        Split.redis.exists(experiment_key)
       end
 
-      def get(key, attribute = nil)
+      def get(experiment_key, attribute = nil)
         if attribute
-          Split.redis.hget(key, attribute)
+          Split.redis.hget(experiment_key, attribute)
         else
-          Split.redis.get(key)
+          Split.redis.get(experiment_key)
         end
       end
 
-      def set(key, attribute_or_value, value=nil)
+      def set(experiment_key, attribute_or_value, value=nil)
         if value
-          Split.redis.hset(key, attribute_or_value, value)
+          Split.redis.hset(experiment_key, attribute_or_value, value)
         else
-          Split.redis.set(key, attribute_or_value)
+          Split.redis.set(experiment_key, attribute_or_value)
         end
       end
 
-      def incr(key, attribute=nil)
+      def incr(experiment_key, attribute=nil)
         if attribute
-          Split.redis.hincrby key, attribute, 1
+          Split.redis.hincrby experiment_key, attribute, 1
         else
-          Split.redis.incr(key)
+          Split.redis.incr(experiment_key)
         end
       end
 
-      def delete(key)
-        Split.redis.del(key)
+      def delete(experiment_key)
+        Split.redis.del(experiment_key)
       end
 
       def type(key)
         Split.redis.type(key)
       end
     
-      def reset(key)
-        Split.redis.hmset key, 'participant_count', 0, 'completed_count', 0
+      def reset(experiment_key)
+        Split.redis.hmset experiment_key, 'participant_count', 0, 'completed_count', 0
       end
 
       # hsetnx
