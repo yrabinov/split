@@ -1,6 +1,6 @@
-require 'split/redis'
+require 'split/db/redis'
 module Split
   class Database
-    include Split::RedisAdapter
+    include Split::DB::Redis
   end
 end
