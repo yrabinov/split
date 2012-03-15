@@ -33,7 +33,7 @@ describe Split::Alternative do
     alternative.experiment.name.should eql(experiment.name)
   end
 
-  it "should save to redis" do
+  it "should save to database" do
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.save
     Split.db.exists?('basket_text:Basket').should be true
