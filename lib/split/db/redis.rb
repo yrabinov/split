@@ -1,3 +1,4 @@
+require 'redis/namespace'
 module Split
   module DB
     module Redis
