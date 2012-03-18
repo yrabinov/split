@@ -17,11 +17,15 @@ describe Split::Alternative do
   end
 
   it "should have a default participation count of 0" do
+    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment.save
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.participant_count.should eql(0)
   end
 
   it "should have a default completed count of 0" do
+    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment.save
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.completed_count.should eql(0)
   end
@@ -56,6 +60,8 @@ describe Split::Alternative do
   end
 
   it "can be reset" do
+    experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+    experiment.save
     alternative = Split::Alternative.new('Basket', 'basket_text')
     alternative.increment_participation
     alternative.increment_completion
@@ -75,9 +81,11 @@ describe Split::Alternative do
 
   describe 'conversion rate' do
     it "should be 0 if there are no conversions" do
+      experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
+      experiment.save
       alternative = Split::Alternative.new('Basket', 'basket_text')
       alternative.completed_count.should eql(0)
-      alternative.conversion_rate.should eql(0)
+      alternative.conversion_rate.should eql(0.0)
     end
 
     it "does something" do

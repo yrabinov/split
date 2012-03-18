@@ -40,7 +40,7 @@ module Split
     end
 
     def conversion_rate
-      return 0 if participant_count.zero?
+      return 0.0 if participant_count.zero?
       (completed_count.to_f/participant_count.to_f)
     end
 

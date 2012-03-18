@@ -2,6 +2,7 @@ module Split
   class Experiment
     attr_accessor :name
     attr_accessor :winner
+    attr_accessor :alternatives
 
     def initialize(name, *alternative_names)
       @name = name.to_s
@@ -31,15 +32,11 @@ module Split
     end
 
     def start_time
-      Split.db.start_time(@name)
-    end
-
-    def alternatives
-      @alternatives.dup
+      Split.db.start_time(name)
     end
 
     def alternative_names
-      @alternatives.map(&:name)
+      alternatives.map(&:name)
     end
 
     def next_alternative

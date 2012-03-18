@@ -39,23 +39,23 @@ module Split
       end
 
       def alternatives(experiment_name)
-        self.find(experiment_name)[:alternatives]
+        self.find(experiment_name)['alternatives']
       end
 
       def start_time(experiment_name)
-        self.find(experiment_name)[:created_at]
+        self.find(experiment_name)['created_at']
       end
 
       def delete(experiment_name)
-        self.server.remove(:name => experiment_name)
+        self.server.remove('name' => experiment_name)
       end
 
       def version(experiment_name)
-        self.find(experiment_name)[:version]
+        self.find(experiment_name)['version']
       end
       
       def winner(experiment_name)
-        self.find(experiment_name)[:winner]
+        self.find(experiment_name)['winner']
       end
       
       def set_winner(experiment_name, winner)
@@ -75,7 +75,8 @@ module Split
       end
       
       def alternative_names(experiment_name)
-        self.alternatives(experiment_name).map(&:name)
+        p self.alternatives(experiment_name)
+        self.alternatives(experiment_name).map{|a| a['name']}
       end
 
       def alternative(experiment_name, alternative)
