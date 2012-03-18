@@ -33,12 +33,6 @@ describe Split::Alternative do
     alternative.experiment.name.should eql(experiment.name)
   end
 
-  it "should save to database" do
-    alternative = Split::Alternative.new('Basket', 'basket_text')
-    alternative.save
-    Split.db.exists?('basket_text:Basket').should be true
-  end
-
   it "should increment participation count" do
     experiment = Split::Experiment.new('basket_text', 'Basket', "Cart")
     experiment.save
@@ -63,8 +57,8 @@ describe Split::Alternative do
 
   it "can be reset" do
     alternative = Split::Alternative.new('Basket', 'basket_text')
-    alternative.participant_count = 10
-    alternative.completed_count = 4
+    alternative.increment_participation
+    alternative.increment_completion
     alternative.reset
     alternative.participant_count.should eql(0)
     alternative.completed_count.should eql(0)

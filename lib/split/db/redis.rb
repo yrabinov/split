@@ -50,6 +50,8 @@ module Split
         self.server.hset(:experiment_start_times, experiment_name, time)
         alternatives.reverse.each do |a|
           self.server.lpush(experiment_name, a.name)
+          self.server.hsetnx "#{experiment_name}:#{a.name}", 'participant_count', 0
+          self.server.hsetnx "#{experiment_name}:#{a.name}", 'completed_count', 0
         end
       end
 
@@ -64,12 +66,20 @@ module Split
           self.server.lrange(experiment_name, 0, -1)
         end
       end
+      
+      def alternative_participant_count(experiment_name, alternative)
+        self.server.hget("#{experiment_name}:#{alternative}", 'participant_count').to_i
+      end
+
+      def alternative_completed_count(experiment_name, alternative)
+        self.server.hget("#{experiment_name}:#{alternative}", 'completed_count').to_i
+      end
 
       def start_time(experiment_name)
         t = self.server.hget(:experiment_start_times, experiment_name)
         Time.parse(t) if t
       end
-      
+
       def all_experiments
         Array(self.server.smembers(:experiments))
       end
@@ -79,53 +89,46 @@ module Split
       end
 
       def winner(experiment_name)
-        Split.db.get(:experiment_winner, experiment_name)
+        self.server.hget(:experiment_winner, experiment_name)
       end
 
       def alternative_names(experiment_name)
         self.server.lrange(experiment_name, 0, -1)
       end
 
-      def get(experiment_key, attribute = nil)
-        if attribute
-          self.server.hget(experiment_key, attribute)
-        else
-          self.server.get(experiment_key)
-        end
+      def increment_version(experiment_name)
+        self.server.incr("#{experiment_name}:version")
       end
 
-      def set(experiment_key, attribute_or_value, value=nil)
-        if value
-          self.server.hset(experiment_key, attribute_or_value, value)
-        else
-          self.server.set(experiment_key, attribute_or_value)
-        end
+      def set_winner(experiment_name, winner)
+        self.server.hset(:experiment_winner, experiment_name, winner.to_s)
       end
 
-      def incr(experiment_key, attribute=nil)
-        if attribute
-          self.server.hincrby experiment_key, attribute, 1
-        else
-          self.server.incr(experiment_key)
-        end
+      def reset_winner(experiment_name)
+        self.server.hdel(:experiment_winner, experiment_name)
       end
 
       def delete(experiment_key)
         self.server.del(experiment_key)
+        self.server.srem(:experiments, experiment_key)
       end
 
       def reset(experiment_name, alternative_name)
         self.server.hmset "#{experiment_name}:#{alternative_name}", 'participant_count', 0, 'completed_count', 0
       end
 
+      def incr_alternative_participant_count(experiment_name, alternative)
+        self.server.hincrby "#{experiment_name}:#{alternative}", 'participant_count', 1
+      end
+
+      def incr_alternative_completed_count(experiment_name, alternative)
+        self.server.hincrby "#{experiment_name}:#{alternative}", 'completed_count', 1
+      end
+
       def hsetnx(key, attribute, value)
         self.server.hsetnx  key, attribute, value
       end
-      
-      def hdel(key, attribute)
-        self.server.hdel(key, attribute)
-      end
-      
+
       def srem(key, attribute)
         self.server.srem(key, attribute)
       end

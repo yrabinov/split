@@ -23,11 +23,11 @@ module Split
     end
 
     def reset_winner
-      Split.db.hdel(:experiment_winner, name)
+      Split.db.reset_winner(name)
     end
 
     def winner=(winner_name)
-      Split.db.set(:experiment_winner, name, winner_name.to_s)
+      Split.db.set_winner(name, winner_name)
     end
 
     def start_time
@@ -63,7 +63,7 @@ module Split
     end
 
     def increment_version
-      @version = Split.db.incr("#{name}:version")
+      @version = Split.db.increment_version(name)
     end
 
     def key
@@ -83,7 +83,6 @@ module Split
     def delete
       alternatives.each(&:delete)
       reset_winner
-      Split.db.srem(:experiments, name)
       Split.db.delete(name)
       increment_version
     end

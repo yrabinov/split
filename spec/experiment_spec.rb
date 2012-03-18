@@ -169,8 +169,8 @@ describe Split::Experiment do
     it "should reset an experiment if it is loaded with different alternatives" do
       experiment = Split::Experiment.find_or_create('link_color', 'blue', 'red', 'green')
       blue = Split::Alternative.new('blue', 'link_color')
-      blue.participant_count = 5
-      blue.save
+      blue.increment_participation
+      experiment.save
       same_experiment = Split::Experiment.find_or_create('link_color', 'blue', 'yellow', 'orange')
       same_experiment.alternatives.map(&:name).should eql(['blue', 'yellow', 'orange'])
       new_blue = Split::Alternative.new('blue', 'link_color')

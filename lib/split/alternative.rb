@@ -20,27 +20,19 @@ module Split
     end
 
     def participant_count
-      Split.db.get(key, 'participant_count').to_i
-    end
-
-    def participant_count=(count)
-      Split.db.set(key, 'participant_count', count.to_i)
+      Split.db.alternative_participant_count(experiment_name, name)
     end
 
     def completed_count
-      Split.db.get(key, 'completed_count').to_i
-    end
-
-    def completed_count=(count)
-      Split.db.set(key, 'completed_count', count.to_i)
+      Split.db.alternative_completed_count(experiment_name, name)
     end
 
     def increment_participation
-      Split.db.incr key, 'participant_count'
+      Split.db.incr_alternative_participant_count(experiment_name, name)
     end
 
     def increment_completion
-      Split.db.incr key, 'completed_count'
+      Split.db.incr_alternative_completed_count(experiment_name, name)
     end
 
     def control?
@@ -79,11 +71,6 @@ module Split
       standard_deviation = ((ctr_e / ctr_c**3) * ((e*ctr_e)+(c*ctr_c)-(ctr_c*ctr_e)*(c+e))/(c*e)) ** 0.5
 
       z_score = ((ctr_e / ctr_c) - 1) / standard_deviation
-    end
-
-    def save
-      Split.db.hsetnx key, 'participant_count', 0
-      Split.db.hsetnx key, 'completed_count', 0
     end
 
     def reset
