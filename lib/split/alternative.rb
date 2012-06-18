@@ -39,8 +39,8 @@ module Split
       Split.redis.hincrby key, 'participant_count', 1
     end
 
-    def increment_completion
-      Split.redis.hincrby key, 'completed_count', 1
+    def increment_completion(completion_value)
+      Split.redis.hincrby key, 'completed_count', completion_value
     end
 
     def control?

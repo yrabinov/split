@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require "split/version"
 
 Gem::Specification.new do |s|
-  s.name        = "split"
+  s.name        = "yrabinov-split"
   s.version     = Split::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Andrew Nesbitt"]

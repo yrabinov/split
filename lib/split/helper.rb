@@ -22,12 +22,12 @@ module Split
       end
     end
 
-    def finished(experiment_name, options = {:reset => true})
+    def finished(experiment_name, options = {:reset => true, :completion_value => 1})
       return if exclude_visitor? or !Split.configuration.enabled
       return unless (experiment = Split::Experiment.find(experiment_name))
       if alternative_name = ab_user[experiment.key]
         alternative = Split::Alternative.new(alternative_name, experiment_name)
-        alternative.increment_completion
+        alternative.increment_completion(options[:completion_value])
         session[:split].delete(experiment_name) if options[:reset]
       end
     rescue Errno::ECONNREFUSED => e
